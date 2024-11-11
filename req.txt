@@ -1,0 +1,5 @@
+pandas
+polars
+ipykernels
+jupyter
+django

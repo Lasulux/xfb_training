@@ -1,0 +1,7 @@
+li a, h1, br, ul, p, label{
+    color: green;
+}
+
+body {
+    background: white url("images/background.png") no-repeat;
+}

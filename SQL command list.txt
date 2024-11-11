@@ -1,0 +1,736 @@
+CREATE TABLE Players_tutorial (
+    player_id int,
+    club_name varchar(255),
+    team_id int,
+    team_short_name VARCHAR(255),
+    team_logo_url VARCHAR(255),
+    surname VARCHAR(255),
+    first_name VARCHAR(255),
+    birthdate DATE,
+    alias varchar(255)
+);
+
+CREATE TABLE dim_users (
+    user_id int,
+    user_name VARCHAR(255)
+);
+
+    Insert into Players_tutorial(player_id,club_name,team_id,team_short_name,team_logo_url,surname,first_name,birthdate,alias)
+    VALUES(
+    259,'MTK',4,'U17','https://content.valdperformance.com/logos/d69aaa10-5bda-4570-b2da-e907d4d4523e.jpg','Zubor','Ádám Gábor','20080314','Zubor Ádám Gábor'
+    );
+
+    INSERT INTO dim_users([user_id],[user_name])
+    VALUES(72,'balint.lassu');
+
+    ALTER TABLE dim_users
+    ADD OID INT;
+
+    UPDATE dim_users SET
+    OID = user_id
+    WHERE [user_name] = 'balint.lassu';
+
+    SELECT * FROM sys.sql_logins WHERE name = 'lassu.balint';
+
+    SELECT alias FROM Players_tutorial WHERE LOWER(alias) COLLATE SQL_Latin1_General_CP1_CI_AI LIKE '%zubor%';
+
+    Insert into Players_tutorial(player_id,club_name,team_id,team_short_name,team_logo_url,surname,first_name,birthdate,alias)
+    VALUES(
+    265,'MTK',2,'U15','https://content.valdperformance.com/logos/d69aaa10-5bda-4570-b2da-e907d4d4523e.jpg','Puruczky','Ádám','20090318','Puruczky Ádám'
+    );
+
+SELECT TOP (1000) [player_id]
+      ,[club_name]
+      ,[team_id]
+      ,[team_short_name]
+      ,[team_logo_url]
+      ,[surname]
+      ,[first_name]
+      ,[birthdate]
+      ,[alias]
+  FROM [training].[dbo].[Players_tutorial]
+
+SELECT COUNT(player_id) cnt FROM (SELECT * FROM Players_tutorial WHERE player_id='11') subquery
+
+
+CREATE TABLE blog_entry(
+blog_entry_id                       int IDENTITY(1,1)   NOT NULL
+,author_first_nm                    nvarchar(50)
+,author_last_nm                     nvarchar(50)
+,main_img_thumbnail_url             nvarchar(500)
+,main_img_desktop_header_url        nvarchar(500)
+,main_img_mobile_header_url         nvarchar(500)
+,entry_title_hun                    nvarchar(100)
+,entry_title_eng                    nvarchar(100)
+,entry_desc_hun                     nvarchar(200)
+,entry_desc_eng                     nvarchar(200)
+,entry_txt_hun                      nvarchar(max)
+,entry_txt_eng                      nvarchar(max)
+,last_modification_dttm             datetime
+,create_dttm                        datetime            NOT NULL
+);
+
+-- PK constraint
+ALTER TABLE blog_entry ADD CONSTRAINT PK_blog_entry_blog_entry_id PRIMARY KEY CLUSTERED (blog_entry_id);
+GO
+ 
+ -- SET create_dttm for INSERT
+ALTER TABLE blog_entry
+    ADD CONSTRAINT DEF_blog_entry_create_dttm DEFAULT GETDATE() FOR create_dttm;
+GO
+
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[blog_entry]') AND type in (N'U'))
+DROP TABLE [dbo].[blog_entry]
+GO
+
+
+SELECT TOP (1000) [blog_entry_id]
+      ,[author_first_nm]
+      ,[author_last_nm]
+      ,[main_img_thumbnail_url]
+      ,[main_img_desktop_header_url]
+      ,[main_img_mobile_header_url]
+      ,[entry_title_hun]
+      ,[entry_title_eng]
+      ,[entry_desc_hun]
+      ,[entry_desc_eng]
+      ,[entry_txt_hun]
+      ,[entry_txt_eng]
+      ,[last_modification_dttm]
+      ,[create_dttm]
+  FROM [training].[dbo].[blog_entry]
+
+SELECT top 5 blog_entry_id, author_first_nm, entry_title_hun, last_modification_dttm, create_dttm FROM [training].[dbo].[blog_entry] ORDER BY create_dttm DESC ,last_modification_dttm DESC;
+
+UPDATE blog_entry SET author_first_nm = 'Teszt' where blog_entry_id =3, 8;
+
+CREATE TABLE Products (
+    item_id int,
+    item_name varchar(255),
+    item_description VARCHAR(MAX),
+    item_price FLOAT,
+    item_type VARCHAR(255),
+    date_added DATE,
+    date_modified DATE
+);
+
+Insert into Products(item_id,item_name,item_description,item_price,item_type,date_added,date_modified)
+VALUES(
+6,'Product3','Giving thisandthat_6 to user.',15.49,'one-time purchase','20240731','20240731'
+);
+
+CREATE TABLE Users (
+    user_id int,
+    email varchar(255),
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    address_1 VARCHAR(255),
+    address_2 VARCHAR(255),
+    date_added DATE,
+    date_modified DATE
+);
+
+CREATE TABLE Purchases (
+    item_id int,
+    user_id int,
+    date_added DATE,
+    date_modified DATE,
+    date_end DATE
+);
+
+    ALTER TABLE Users
+    ADD alias VARCHAR(255);
+
+Insert into Purchases(item_id,user_id,date_added,date_modified,date_end)
+VALUES(
+5,1,'20240801','20240801','20240801'
+);
+
+select q.*,u.*,p.date_added,p.date_modified,p.date_end from Purchases p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id;
+
+select q.*,u.*,p.date_added,p.date_modified,p.date_end
+    from Purchases p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id
+    WHERE LOWER(q.item_name) COLLATE SQL_Latin1_General_CP1_CI_AI LIKE '%Service%';
+
+select q.*,u.*,p.date_added,p.date_modified,p.date_end from Purchases p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id;
+
+SELECT name 
+FROM 
+sys.dm_exec_describe_first_result_set
+('select q.*,u.*,p.date_added,p.date_modified,p.date_end
+    from Purchases p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id
+    WHERE LOWER(q.item_name) COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ''%Service%'';', NULL, 0) ;
+
+DELETE from Purchases where user_id =5;
+    
+ALTER TABLE Purchases
+    ADD simplepay_transaction_id INT;
+
+UPDATE Purchases SET
+    simplepay_transaction_id = 99844867
+    WHERE [item_id] = 1
+
+  ALTER TABLE Purchases RENAME TO Transactions
+
+USE training
+GO
+EXEC sp_rename 'Purchases', 'Transactions';
+
+EXEC sp_rename 'Transactions.transaction_id', 'order_id','COLUMN';
+
+ALTER TABLE Transactions
+    ADD total NUMERIC(7, 2);
+
+UPDATE Transactions SET
+    transaction_status = 'PENDING'
+    WHERE order_id =1;
+
+ALTER TABLE Users ADD PRIMARY KEY(user_id);
+
+ALTER TABLE Users ALTER COLUMN user_id int NOT NULL; 
+
+ALTER TABLE Transactions ADD order_id INT IDENTITY(1,1);
+
+ALTER TABLE Transactions DROP COLUMN order_id;
+
+CREATE TABLE Transactions (
+    order_id INT IDENTITY(1,1) PRIMARY KEY,
+    simplepay_transaction_id INT,
+    payment_status VARCHAR(15),
+    item_id int FOREIGN KEY REFERENCES Products(item_id),
+    user_id int FOREIGN KEY REFERENCES Users(user_id),
+    currency VARCHAR(8),
+    total NUMERIC(7, 2),
+    date_added DATE,
+    date_modified DATE,
+    date_end DATE
+);
+
+
+Insert into Transactions(simplepay_transaction_id,payment_status,item_id,user_id,currency,total,date_added,date_modified,date_end)
+VALUES(
+99844942,'FINISHED',5,1,'EUR',14.99,'20240801','20240801','20240801'
+);
+
+Insert into Transactions(simplepay_transaction_id,payment_status,item_id,user_id,currency,total,date_added,date_modified,date_end)
+VALUES(
+99844943,'FINISHED',5,1,'EUR',14.99,'20240801','20240801','20240801'
+);
+
+SELECT 
+    'ALTER TABLE ' +  OBJECT_SCHEMA_NAME(parent_object_id) +
+    '.[' + OBJECT_NAME(parent_object_id) + 
+    '] DROP CONSTRAINT ' + name
+FROM sys.foreign_keys
+WHERE referenced_object_id = object_id('Transactions')
+
+ALTER TABLE dbo.[Inovices] DROP CONSTRAINT FK__Inovices__order___52593CB8
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Transactions]') AND type in (N'U'))
+DROP TABLE [dbo].[Transactions]
+GO
+
+
+SET IDENTITY_INSERT Transactions ON;
+
+Insert into Transactions(order_id,simplepay_transaction_id,payment_status,item_id,user_id,currency,total,date_added,date_modified,date_end)
+VALUES(
+11,99844942,'FINISHED',5,1,'EUR',14.99,'20240801','20240801','20240801'
+);
+
+CREATE TABLE Invoices (
+    order_id INT FOREIGN KEY REFERENCES Transactions(order_id),
+    name VARCHAR(50),
+    company VARCHAR(50),
+    country VARCHAR(50),
+    state VARCHAR(50),
+    city VARCHAR(50),
+    zip VARCHAR(50),
+    address VARCHAR(50),
+    address2 VARCHAR(50),
+    phone VARCHAR(50));
+
+CREATE TABLE Transactions (
+    order_id INT PRIMARY KEY,
+    simplepay_transaction_id INT,
+    payment_status VARCHAR(15),
+    item_id int FOREIGN KEY REFERENCES Products(item_id),
+    user_id int FOREIGN KEY REFERENCES Users(user_id),
+    currency VARCHAR(8),
+    total NUMERIC(7, 2),
+    date_added DATE,
+    date_modified DATE,
+    date_end DATE
+);
+
+SELECT 
+    'ALTER TABLE ' +  OBJECT_SCHEMA_NAME(parent_object_id) +
+    '.[' + OBJECT_NAME(parent_object_id) + 
+    '] DROP CONSTRAINT ' + name
+FROM sys.foreign_keys
+WHERE referenced_object_id = object_id('Inovices')
+
+ALTER TABLE dbo.[Inovices] DROP CONSTRAINT FK__Inovices__order___52593CB8
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Inovices]') AND type in (N'U'))
+DROP TABLE [dbo].[Inovices]
+GO
+
+SELECT p.*,q.*,u.* FROM Transactions p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id WHERE order_id = 12;SELECT q.*,u.*,p.date_added,p.date_modified,p.date_end FROM Transactions p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id WHERE order_id = 12;
+SELECT p.*,q.*,u.* FROM Transactions p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id WHERE order_id = 12;SELECT q.*,u.*,p.date_added,p.date_modified,p.date_end FROM Transactions p LEFT JOIN Products q ON p.item_id = q.item_id LEFT JOIN Users u ON p.user_id = u.user_id
+WHERE LOWER(order_id) COLLATE SQL_Latin1_General_CP1_CI_AI LIKE '%12%';
+
+INSERT INTO Invoices ([order_id],[name],[company],[country],[state],[city],[zip],[address],[address2],[phone]) VALUES(12,'{invoice["name"]}','{invoice["company"]}','{invoice["address_country"]}','{invoice["address_state"]}','{invoice["address_city"]}','{invoice["address_zip"]}','{invoice["address1"]}','{invoice["address2"]}','{invoice["phone_number"]}')
+
+SELECT TOP (1000) [order_id]
+      ,[simplepay_transaction_id]
+      ,[payment_status]
+      ,[item_id]
+      ,[user_id]
+      ,[currency]
+      ,[total]
+      ,[date_added]
+      ,[date_modified]
+      ,[date_end]
+  FROM [training].[dbo].[Transactions]
+
+  CREATE TABLE Cards (
+    card_id INT PRIMARY KEY,
+    card_status VARCHAR(15),
+    user_id int FOREIGN KEY REFERENCES Users(user_id),
+    currency VARCHAR(8),
+    date_added DATE,
+    date_end DATE
+);
+
+ALTER TABLE Cards
+ADD date_modified Date;
+
+ CREATE TABLE Tokens (
+    token_id INT PRIMARY KEY,
+    token_status VARCHAR(15),
+    card_id int FOREIGN KEY REFERENCES Cards(card_id),
+    user_id int FOREIGN KEY REFERENCES Users(user_id),
+    currency VARCHAR(8),
+    date_added DATE,
+    date_modified DATE,
+    date_end DATE
+);
+
+Insert into Cards(card_id,card_status,user_id, currency, date_added,date_modified, date_end)
+VALUES(
+1,'ACTIVE',1,'EUR','20240801','20240801','20240801');
+
+Insert into Tokens(token_id, token_status, card_id, user_id, currency, date_added, date_modified, date_end)
+VALUES(
+1,'ACTIVE',1,1,'EUR','20240801','20240801','20240801');
+
+select * from cards;
+select * from Tokens;
+
+SELECT TOP (1000) [card_id]
+      ,[card_status]
+      ,[user_id]
+      ,[currency]
+      ,[date_added]
+      ,[date_end]
+      ,[date_modified]
+  FROM [training].[dbo].[Cards]
+
+  
+
+Insert into Cards(card_status,user_id, currency, date_added,date_modified, date_end, card_secret)
+VALUES(
+'ACTIVE',1,'HUF','20240801','20240801','20240801','secrettt');
+
+select * from Tokens
+select * from Cards
+
+ALTER TABLE Cards
+ADD card_secret VARCHAR(30);
+
+DELETE from Tokens where user_id =1;
+DELETE from Cards where user_id =1;
+
+SELECT *
+FROM sys.foreign_keys
+WHERE referenced_object_id = object_id('Tokens')
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Tokens'
+
+
+alter table Tokens
+drop CONSTRAINT FK__Tokens__card_id__5DCAEF64
+alter table Tokens
+drop CONSTRAINT FK__Tokens__user_id__5EBF139D
+
+
+ALTER TABLE Tokens
+ADD CONSTRAINT FK__Tokens__card_id
+    FOREIGN KEY (card_id) REFERENCES Cards (card_id)
+    ON DELETE CASCADE;
+
+ALTER TABLE Tokens
+ADD CONSTRAINT FK__Tokens__user_id
+    FOREIGN KEY (user_id) REFERENCES Users (user_id)
+    ON DELETE CASCADE;
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Cards'
+
+alter table Cards
+drop CONSTRAINT FK__Cards__user_id__5AEE82B9
+
+ALTER TABLE Cards
+ADD CONSTRAINT FK__Cards__user_id
+    FOREIGN KEY (user_id) REFERENCES Users (user_id)
+    ON DELETE NO ACTION;
+
+alter table Tokens
+drop CONSTRAINT FK__Tokens__card_id
+
+alter table Cards
+drop CONSTRAINT PK__Cards__BDF201DD11FD16B3
+
+ALTER TABLE Cards DROP COLUMN card_id;
+
+ALTER TABLE Cards
+ADD card_id INT IDENTITY(1,1) PRIMARY KEY 
+
+ALTER TABLE Tokens
+ADD CONSTRAINT FK__Tokens__card_id
+    FOREIGN KEY (card_id) REFERENCES Cards (card_id)
+    ON DELETE CASCADE;
+
+ALTER TABLE Cards
+ALTER COLUMN card_secret VARCHAR(30) NOT NULL;
+
+SELECT TOP (1000) [token_id]
+      ,[token_status]
+      ,[card_id]
+      ,[user_id]
+      ,[currency]
+      ,[date_added]
+      ,[date_modified]
+      ,[date_end]
+  FROM [training].[dbo].[Tokens]
+
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Tokens'
+
+alter table Tokens
+drop CONSTRAINT PK__Tokens__CB3C9E17C1F8D04A
+
+ALTER TABLE Tokens
+ADD token_id INT IDENTITY(1,1) PRIMARY KEY 
+
+ALTER TABLE Tokens
+ADD [times] INT
+
+ALTER TABLE Tokens
+ADD [until] DATE
+
+ALTER TABLE Tokens
+ADD [maxAmount] INT
+
+ALTER TABLE Transactions
+ADD card_id INT
+
+select * FROM Tokens
+select * from Cards
+select * from Transactions where item_id = 2
+
+Insert into Tokens(token_status,card_id,user_id,currency,date_added,date_modified,date_end,token_secret)
+VALUES(
+'ACTIVE',5,1,'HUF','20240801','20240801','20240801','SPTDAJMDGTOGMIAR6OGQU23IVBWFDCWL7XM542UUS2GJTH7K8CVQ6CE739BA763O');
+
+ALTER TABLE Cards DROP COLUMN [card_secret];
+
+Insert into Cards(card_status,user_id, currency, date_added,date_modified, date_end)
+VALUES(
+'ACTIVE',1,'HUF','2024-09-15 10:05:55','20240801','20240801');
+
+SELECT * FROM Cards WHERE user_id = user_id ORDER BY date_added DESC, card_id DESC
+
+ALTER TABLE Cards ALTER COLUMN date_end DATETIME
+
+INSERT INTO Cards(card_status,user_id, currency, date_added,date_modified, date_end) VALUES('PENDING','1','HUF','20240813','20240813','20240813');
+
+delete from Cards where user_id = 1
+
+INSERT INTO Transactions (order_id,simplepay_transaction_id,item_id,user_id,currency,total,payment_status,date_added,date_modified,date_end,card_id) VALUES ('10101051568029249123','503951241','0','1','HUF','100','PENDING','20240813','20240813','20240813','27')
+
+INSERT INTO Transactions (order_id,simplepay_transaction_id,item_id,user_id,currency,total,payment_status,date_added,date_modified,date_end,card_id) VALUES ('123123123','503951288','1','1','HUF','100','PENDING','20240813','20240813','20240813','31')
+
+INSERT INTO Transactions (order_id,simplepay_transaction_id,item_id,user_id,currency,total,payment_status,date_added,date_modified,date_end,card_id) VALUES ('123133','503951288','1','1','HUF','100','PENDING','20240813','20240813','20240813','35')
+
+
+
+select * from Cards
+
+select * from Transactions
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Transactions'
+
+alter table Transactions
+drop CONSTRAINT PK__Transact__46596229A80B5994
+
+ALTER TABLE Transactions DROP COLUMN order_id;
+
+ALTER TABLE Transactions
+ADD order_id INT IDENTITY(1,1) PRIMARY KEY
+
+select * from Invoices
+select * from Transactions
+delete from Invoices
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Invoices'
+
+alter table Invoices
+drop CONSTRAINT FK__Invoices__order___5812160E
+
+ALTER TABLE Invoices DROP COLUMN order_id;
+
+ALTER TABLE Invoices
+ADD order_id INT FOREIGN KEY REFERENCES Transactions(order_id)
+
+select * from Invoices
+select * from Transactions
+delete from Transactions
+select * from Tokens
+
+Insert into Transactions(simplepay_transaction_id,payment_status,item_id,user_id,currency,total,date_added,date_modified,date_end,card_id)
+VALUES(
+99844942,'FINISHED',5,1,'EUR',14.99,'20240801','20240801','20240801',12
+);
+
+Update Transactions SET payment_status = 'INITIALIZED',simplepay_transaction_id='123123123' WHERE order_id =10
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Tokens'
+
+alter table Tokens
+drop CONSTRAINT FK__Tokens__card_id
+
+ALTER TABLE Tokens DROP COLUMN card_id;
+
+ALTER TABLE Tokens
+ADD order_id INT FOREIGN KEY REFERENCES Transactions(order_id)
+
+ALTER TABLE Transactions DROP COLUMN simplepay_transaction_id;
+
+ALTER TABLE Transactions
+ADD simplepay_transaction_id VARCHAR(32)
+
+SELECT * FROM Transactions WHERE simplepay_transaction_id = 'placeholder_6DN5ETN5A0'
+
+
+
+SELECT TOP (1000) [token_status]
+      ,[user_id]
+      ,[currency]
+      ,[date_added]
+      ,[date_modified]
+      ,[token_id]
+      ,[token_secret]
+      ,[times]
+      ,[until]
+      ,[maxAmount]
+      ,[order_id]
+  FROM [training].[dbo].[Tokens]
+
+  select * from Cards
+
+  select * from Transactions
+  delete from Transactions
+
+  ALTER TABLE Transactions ALTER COLUMN order_id INT IDENTITY(9832,1);
+
+delete from Invoices
+delete from Tokens
+delete from Transactions
+
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Invoices'
+alter table Invoices
+drop CONSTRAINT FK__Invoices__order___68487DD7
+ALTER TABLE Invoices DROP COLUMN order_id;
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Tokens'
+alter table Tokens
+drop CONSTRAINT FK__Tokens__order_id__693CA210
+ALTER TABLE Tokens DROP COLUMN order_id;
+
+SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_NAME='Transactions'
+alter table Transactions
+drop CONSTRAINT PK__Transact__46596229B1F562DB
+
+ALTER TABLE Transactions DROP COLUMN order_id;
+ALTER TABLE Transactions
+ADD order_id INT IDENTITY(9835,1) PRIMARY KEY
+ALTER TABLE Invoices
+ADD order_id INT FOREIGN KEY REFERENCES Transactions(order_id)
+ALTER TABLE Tokens
+ADD order_id INT FOREIGN KEY REFERENCES Transactions(order_id)
+
+SELECT * from Transactions
+SELECT * from Invoices
+SELECT * from Tokens
+
+ALTER TABLE Cards
+ADD cardMask VARCHAR(20)
+
+ALTER TABLE Cards
+RENAME COLUMN date_end to expiry; 
+
+
+EXEC sp_rename 'Cards.date_end',  'expiry', 'COLUMN'; 
+
+ALTER TABLE Tokens
+ADD card_id INT FOREIGN KEY REFERENCES Cards(card_id)
+
+DELETE from Cards
+delete from Tokens
+SELECT * from Transactions
+select * from Cards
+select * from Tokens where user_id = 1 AND token_status = 'ACTIVE' ORDER BY until
+select * from Products
+select * from Users
+
+UPDATE Transactions SET card_id = '2', currency = 'EUR' WHERE order_id = NULL;
+
+Insert into Cards(card_status, user_id, currency, date_added, expiry, date_modified, cardMask)
+VALUES(
+'Test',1,'EUR','20240801','2024-09-30T14:46:18','20240801','xxxx-etc'
+);
+
+ALTER TABLE Users
+ADD phone VARCHAR(20);
+ALTER TABLE Users
+ADD company VARCHAR(50);
+ALTER TABLE Users
+ADD country VARCHAR(50);
+ALTER TABLE Users
+ADD state VARCHAR(50);
+ALTER TABLE Users
+ADD city VARCHAR(50);
+ALTER TABLE Users
+ADD zip VARCHAR(50);
+
+select * from Tokens
+
+UPDATE Tokens SET token_status = 'ACTIVE'  WHERE card_id = 48 and order_id_origin = 9856 ;
+
+EXEC sp_rename 'Tokens.order_id',  'order_id_origin', 'COLUMN'; 
+
+select * from Transactions
+
+ALTER TABLE Tokens
+ADD order_id_spent_on INT FOREIGN KEY REFERENCES Transactions(order_id);
+
+select * from Users
+select * from cards
+
+UPDATE Users SET phone = '+363012345678', company = 'kft', country = 'orszag', state = 'megye', city = 'szityi', zip = '1234' WHERE user_id = 1;
+
+select * from Tokens
+
+UPDATE Tokens SET token_status = 'Init Cancel' where token_id = '18'
+
+select * from Cards
+select * from Transactions
+
+ALTER TABLE Cards
+ADD registered_order_id INT FOREIGN KEY REFERENCES Transactions(order_id);
+
+select * from Transactions
+select * from Cards
+Select * from Tokens
+
+
+UPDATE Cards SET date_modified = '2024-10-15T18:30:55'
+UPDATE Transactions SET date_modified = '2024-10-15T18:30:55'
+
+ALTER TABLE Transactions ALTER COLUMN total NUMERIC (10, 2)
+ALTER TABLE Transactions ALTER COLUMN date_added DATETIME
+ALTER TABLE Transactions ALTER COLUMN date_modified DATETIME
+ALTER TABLE Transactions ALTER COLUMN date_end DATETIME
+
+ALTER TABLE Users ALTER COLUMN date_added DATETIME
+ALTER TABLE Users ALTER COLUMN date_modified DATETIME
+
+ALTER TABLE Products ALTER COLUMN date_added DATETIME
+ALTER TABLE Products ALTER COLUMN date_modified DATETIME
+
+ALTER TABLE Tokens ALTER COLUMN date_added DATETIME
+ALTER TABLE Tokens ALTER COLUMN date_modified DATETIME
+ALTER TABLE Tokens ALTER COLUMN until DATETIME
+
+
+select * from Tokens
+select * from Cards
+
+delete from Tokens
+delete from Cards
+
+INSERT INTO Tokens (order_id_origin,token_status,user_id,currency,date_added,date_modified,token_secret,times,until,maxAmount,card_id) VALUES('9889','PENDING','1','HUF','20241009','20241009','SPTF6GSXW7P6R26OOTIFK533CHEN73G8MLPC85NHF8ANN8A62B9X56UMDEOKIDQ9','3','2024-12-01T18:00:00+02:00','1200','85');
+INSERT INTO Tokens (order_id_origin,token_status,user_id,currency,date_added,date_modified,token_secret,times,until,maxAmount,card_id) VALUES('9889','PENDING','1','HUF','20241009','20241009','SPTF6GSXW7P6R26OOTIFK533CHEN73G8MLPC85NHF8ANN8A62B9X56UMDEOKIDQ9','3','2024-12-01T18:00:00','1200','85');
+
+INSERT INTO Cards(card_status,user_id, currency, date_added,date_modified, expiry, cardMask) VALUES('INITIALIZED','1','HUF','2024-10-09T09:52:52+02:00','2024-10-09T09:52:52+02:00','2024-10-09T09:52:52+02:00','PENDING');
+
+ALTER TABLE Cards ALTER COLUMN date_added DATETIMEOFFSET(0)
+ALTER TABLE Cards ALTER COLUMN date_modified DATETIMEOFFSET(0)
+ALTER TABLE Cards ALTER COLUMN expiry DATETIMEOFFSET(0)
+
+ALTER TABLE Transactions ALTER COLUMN date_added DATETIMEOFFSET(0)
+ALTER TABLE Transactions ALTER COLUMN date_modified DATETIMEOFFSET(0)
+ALTER TABLE Transactions ALTER COLUMN date_end DATETIMEOFFSET(0)
+
+ALTER TABLE Users ALTER COLUMN date_added DATETIMEOFFSET(0)
+ALTER TABLE Users ALTER COLUMN date_modified DATETIMEOFFSET(0)
+
+ALTER TABLE Products ALTER COLUMN date_added DATETIMEOFFSET(0)
+ALTER TABLE Products ALTER COLUMN date_modified DATETIMEOFFSET(0)
+
+ALTER TABLE Tokens ALTER COLUMN date_added DATETIMEOFFSET(0)
+ALTER TABLE Tokens ALTER COLUMN date_modified DATETIMEOFFSET(0)
+ALTER TABLE Tokens ALTER COLUMN until DATETIMEOFFSET(0)
+
+select * from Transactions
+
+select * from Cards
+select * from tokens
+select * from Transactions
+
+INSERT INTO Cards(card_status,user_id, currency, date_added,date_modified, expiry, cardMask) VALUES('INITIALIZED','1','HUF','2024-10-18T09:10:05+02:00','2024-10-18T09:10:05+02:00','2024-12-20T09:10:05+02:00','PENDING');
+INSERT INTO Cards(card_status,user_id, currency, date_added,date_modified, expiry, cardMask) VALUES('INITIALIZED','1','HUF','2024-10-18T09:10:05+02:00','2024-10-18 09:10:05','202412:19','PENDING');
+
+select * from Tokens;
+select * from Cards;
+UPDATE Tokens SET token_status = 'active' WHERE order_id_spent_on = ;
+select * from Invoices;
+select * from Transactions
+delete from Invoices where order_id = '9879';
+
+select * from Transactions
+select * from Users
+select * from cards
+select * from Invoices
+select * from tokens
+select * from Products
+
+
+ALTER TABLE Transactions
+    ADD note varchar(200);
+
+select * from products
+
+Update products SET item_type = 'subscription_yearly' WHERE item_id =3
